@@ -17,25 +17,25 @@ function read(): ThemeColors {
   return {
     series1: value('--series-1'),
     series2: value('--series-2'),
-    grid: value('--grid'),
-    text: value('--text-secondary'),
+    grid: value('--border'),
+    text: value('--text'),
     muted: value('--text-muted'),
-    surface: value('--surface-1'),
+    surface: value('--bg-elevated'),
     animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   }
 }
 
 /**
  * SVG presentation attributes (fill="...") cannot use CSS variables, so chart colors are read from the
- * design tokens and re-read when the OS switches between light and dark mode.
+ * design tokens (src/styles/tokens.css); the reduced-motion preference is re-read when the OS setting changes.
  */
 export function useThemeColors(): ThemeColors {
   const [colors, setColors] = useState<ThemeColors>(read)
   useEffect(() => {
-    const queries = ['(prefers-color-scheme: dark)', '(prefers-reduced-motion: reduce)'].map(q => window.matchMedia(q))
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
     const update = () => setColors(read())
-    queries.forEach(media => media.addEventListener('change', update))
-    return () => queries.forEach(media => media.removeEventListener('change', update))
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
   }, [])
   return colors
 }

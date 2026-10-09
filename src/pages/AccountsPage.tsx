@@ -4,6 +4,7 @@ import { accountsApi, notificationsApi } from '../api/esep'
 import type { Account } from '../api/types'
 import { useToken } from '../auth/useAuth'
 import { Alert } from '../components/Alert'
+import { Stairs } from '../components/Brand'
 import { Field } from '../components/Field'
 import { errorMessage } from '../lib/errors'
 import { formatDateTime, formatMoney } from '../lib/format'
@@ -48,12 +49,15 @@ export function AccountsPage() {
   const active = list.filter(a => a.status === 'ACTIVE')
   return (
     <>
-      <div className="page-head">
+      <div className="page-head page-hero">
         <div>
           <h1>Accounts</h1>
           <p>One active account per currency. Share the account number to receive money.</p>
         </div>
-        {active.length > 0 && <Link to="/transfer" className="button-link">New transfer</Link>}
+        <div className="actions">
+          {active.length > 0 && <Link to="/transfer" className="button-link">New transfer</Link>}
+          <Stairs />
+        </div>
       </div>
 
       {actionError !== null && <Alert kind="error">{errorMessage(actionError)}</Alert>}

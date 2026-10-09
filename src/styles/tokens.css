@@ -1,0 +1,40 @@
+/*
+ * Esep brand tokens. Dark theme is the only theme.
+ * Contrast (WCAG 2.x) on --bg-elevated: text 16.7, text-muted 8.9, text-subtle 5.4,
+ * danger 4.9, success 8.9, brand-2 5.5; #0b0b0f on the gradient stops 5.5 to 8.3.
+ */
+:root {
+  color-scheme: dark;
+
+  --bg: #0b0b0f;
+  --bg-elevated: #14141a;
+  --bg-hover: #1b1b23;
+  --border: #24242c;
+
+  --text: #f4f4f5;
+  --text-muted: #b4b4bd;
+  --text-subtle: #8a8a96;
+  --text-on-brand: #0b0b0f;
+
+  --brand-1: #ff2d78;
+  --brand-2: #ff4a3d;
+  --brand-3: #ff8a1f;
+  --brand-gradient: linear-gradient(135deg, #ff2d78 0%, #ff4a3d 55%, #ff8a1f 100%);
+
+  --success: #2ecc8f;
+  --danger: #f04438;
+  --warning: #f5b83d;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--brand-2) 45%, transparent);
+  --font: 'Poppins', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* chart series, read by useThemeColors (SVG attributes cannot use var()) */
+  --series-1: var(--brand-2);
+  --series-2: var(--brand-3);
+  --series-3: var(--text-subtle);
+}

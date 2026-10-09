@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
 import { authApi } from '../api/esep'
 import { Alert } from '../components/Alert'
+import { Logo } from '../components/Brand'
 import { Field } from '../components/Field'
 import { errorMessage } from '../lib/errors'
 
@@ -37,7 +38,7 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="card auth-card">
-        <div className="brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />Esep</div>
+        <div className="brand"><Logo />Esep</div>
         <h1>Create an account</h1>
         {error !== null && <Alert kind="error">{errorMessage(error)}</Alert>}
         <form onSubmit={submit} noValidate>

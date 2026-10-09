@@ -75,7 +75,7 @@ export function HistoryPage() {
           : !data || data.content.length === 0 ? <div className="empty">No operations for these filters.</div>
           : (
             <div className="table-wrap">
-              <table>
+              <table className="history-table">
                 <thead>
                   <tr>
                     <th scope="col">Date</th>
