@@ -1,0 +1,121 @@
+/* Bank cards (accounts), mini cards (transfer source) and their currency themes. */
+[data-theme='brand'] { --card-bg: var(--brand-gradient); --card-ink: #0b0b0f; }
+[data-theme='navy'] { --card-bg: linear-gradient(135deg, #2a4cb0 0%, #172554 55%, #0b1229 100%); --card-ink: #f4f4f5; }
+[data-theme='graphite'] { --card-bg: linear-gradient(135deg, #5b5b66 0%, #2b2b31 55%, #17171b 100%); --card-ink: #f4f4f5; }
+[data-theme='teal'] { --card-bg: linear-gradient(135deg, #0f766e 0%, #134e4a 60%, #0a2e2b 100%); --card-ink: #f4f4f5; }
+
+.bank-card { width: var(--card-w); aspect-ratio: 1.586; perspective: 1000px; }
+.tilt {
+  position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .5s var(--ease-out);
+}
+.tilt.tilting { transition: transform .12s linear; }
+.flipper { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .6s var(--ease-out); }
+.flipped .flipper { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute; inset: 0; overflow: hidden; border-radius: var(--card-radius);
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border: 1px solid rgb(255 255 255 / 8%);
+}
+
+/* front: a <button> that flips the card */
+button.card-front {
+  display: grid; grid-template-rows: auto 1fr auto; align-items: center; justify-items: stretch; justify-content: normal;
+  padding: 18px 20px; min-height: 0; text-align: left; font-weight: 500;
+  background: var(--card-bg); color: var(--card-ink); border-radius: var(--card-radius);
+}
+button.card-front:hover:not(:disabled) { filter: none; color: var(--card-ink); }
+button.card-front:active:not(:disabled) { transform: none; }
+button.card-front:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; box-shadow: none; }
+/* grain: SVG noise, no image files */
+.card-front::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .22; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* thin static highlight along the top-left edge */
+.card-front::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(120deg, rgb(255 255 255 / 22%) 0%, rgb(255 255 255 / 0%) 32%);
+}
+/* glare that follows the mouse: a big radial blob moved with transform */
+.card-glare {
+  position: absolute; inset: -50%; pointer-events: none; opacity: 0; mix-blend-mode: soft-light;
+  background: radial-gradient(circle at center, rgb(255 255 255 / 55%), rgb(255 255 255 / 0%) 32%);
+  transform: translate(calc((var(--px, .5) - .5) * 50%), calc((var(--py, .5) - .5) * 50%));
+  transition: opacity .3s;
+}
+.tilting .card-glare { opacity: 1; }
+
+.bank-card .meta { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.8125rem; }
+.currency-chip {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 1rem;
+  background: color-mix(in srgb, currentColor 14%, transparent); border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+}
+.bank-card .balance {
+  position: relative; font-size: clamp(1.5rem, 6.5vw, 1.875rem); font-weight: 800; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-foot { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.75rem; }
+.card-number { letter-spacing: 0.14em; font-variant-numeric: tabular-nums; }
+.card-status {
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+}
+
+/* closed: muted card with a diagonal band */
+.bank-card.closed button.card-front { background: linear-gradient(135deg, #34343c 0%, #1d1d23 100%); color: var(--text-muted); }
+.closed-band {
+  position: absolute; left: -15%; right: -15%; top: 46%; transform: rotate(-14deg); text-align: center;
+  padding: 6px 0; background: rgb(11 11 15 / 82%); color: var(--text); font-weight: 800; font-size: 0.8125rem; letter-spacing: 0.35em;
+  border-block: 1px solid var(--border);
+}
+
+/* back: details and actions */
+.card-back {
+  transform: rotateY(180deg); background: var(--bg-elevated); color: var(--text);
+  display: grid; grid-template-rows: auto auto 1fr; gap: 8px; padding: 12px 14px 14px;
+}
+.card-back::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; background: var(--card-bg); }
+.back-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.back-head h3 { font-size: 1rem; font-weight: 600; }
+.card-details { margin: 0; display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: 8px; }
+.card-details dt { font-size: 0.6875rem; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.06em; }
+.card-details dd { margin: 0; font-size: 0.875rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.card-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-self: end; }
+.card-actions button {
+  min-height: 40px; padding: 6px 4px; border-radius: var(--radius-sm); font-size: 0.75rem; gap: 4px;
+  background: transparent; color: var(--text); border-color: var(--border); flex-direction: column;
+}
+.card-actions button:hover:not(:disabled) { filter: none; background: var(--bg-hover); }
+.card-actions svg { width: 16px; height: 16px; }
+
+/* "+ New account" as the last card */
+button.new-card {
+  width: var(--card-w, 300px); aspect-ratio: 1.586; height: auto; border-radius: var(--card-radius);
+  display: grid; place-content: center; justify-items: center; gap: 10px;
+  background: transparent; color: var(--text-muted); font-weight: 500;
+  border: 1.5px dashed color-mix(in srgb, var(--text-subtle) 55%, transparent);
+}
+button.new-card:hover:not(:disabled) { filter: none; color: var(--text); background: var(--bg-elevated); border-color: var(--text-subtle); }
+.new-card-icon { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border); }
+.new-card-icon svg { width: 20px; height: 20px; }
+
+/* mini cards: transfer source picker and the top-up sheet */
+.mini-card {
+  position: relative; display: grid; gap: 2px; padding: 14px 16px; border-radius: 16px; overflow: hidden;
+  background: var(--card-bg); color: var(--card-ink);
+}
+.mini-card span { font-size: 0.8125rem; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.mini-card strong { font-size: 1.25rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.mini-card.selectable { cursor: pointer; outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .15s, transform .12s var(--ease-out); }
+.mini-card.selectable:active { transform: scale(.98); }
+.mini-card.selectable input { position: absolute; opacity: 0; pointer-events: none; }
+.mini-card.selectable::after {
+  content: ''; position: absolute; right: 14px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 60%, transparent);
+}
+.mini-card.selectable:has(input:checked) { outline-color: var(--text); }
+.mini-card.selectable:has(input:checked)::after { border-width: 6px; border-color: currentColor; }
+.mini-card.selectable:has(input:focus-visible) { outline-color: var(--brand-2); }
