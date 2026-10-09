@@ -1,132 +1,136 @@
-import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router'
-import { accountsApi, notificationsApi } from '../api/esep'
+import { RefreshCw } from 'lucide-react'
+import { m } from 'motion/react'
+import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router'
+import { accountsApi } from '../api/esep'
 import type { Account } from '../api/types'
 import { useToken } from '../auth/useAuth'
 import { Alert } from '../components/Alert'
-import { Stairs } from '../components/Brand'
-import { Field } from '../components/Field'
+import { EmptyIllustration, ErrorState, SectionHead, Skeleton } from '../components/States'
+import { useToast } from '../components/toast'
+import { CURRENCIES } from '../lib/cards'
+import { useDataVersion } from '../lib/dataVersion'
 import { errorMessage } from '../lib/errors'
-import { formatDateTime, formatMoney } from '../lib/format'
+import { cascade, useMotionDisabled } from '../lib/motion'
 import { useApi } from '../lib/useApi'
+import { NewAccountSheet, OpenAccountForm, TopUpSheet } from './dashboard/AccountSheets'
+import { BalanceHero } from './dashboard/BalanceHero'
+import { CardCarousel } from './dashboard/CardCarousel'
+import { QuickActions } from './dashboard/QuickActions'
+import { RecentOperations } from './dashboard/RecentOperations'
+import { SpendingPanel } from './dashboard/SpendingPanel'
 
-// currencies with a system funding account on the backend (deposits are possible)
-const CURRENCIES = ['KZT', 'USD', 'EUR']
+type SheetState = { kind: 'new' } | { kind: 'topup'; account: Account } | null
+
+const order = (currency: string) => (CURRENCIES.indexOf(currency) + 1 || 99)
 
 export function AccountsPage() {
   const token = useToken()
-  const accounts = useApi(() => accountsApi.list(token), [token])
-  const notifications = useApi(() => notificationsApi.latest(token, 5), [token])
-  const [currency, setCurrency] = useState('KZT')
-  const [actionError, setActionError] = useState<unknown>(null)
+  const toast = useToast()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const noMotion = useMotionDisabled()
+  const { version } = useDataVersion()
+  const accounts = useApi(() => accountsApi.list(token), [token, version])
+  const [chosenCurrency, setCurrency] = useState('')
+  const [sheet, setSheet] = useState<SheetState>(null)
   const [busy, setBusy] = useState(false)
+  const [actionError, setActionError] = useState<unknown>(null)
 
-  async function create(event: FormEvent) {
-    event.preventDefault()
-    await run(() => accountsApi.create(token, currency))
-  }
+  const list = [...(accounts.data ?? [])].sort((a, b) =>
+    Number(a.status === 'CLOSED') - Number(b.status === 'CLOSED') || order(a.currency) - order(b.currency) || a.id - b.id)
+  const active = list.filter(a => a.status === 'ACTIVE')
+  const currencies = active.map(a => a.currency)
+  const currency = currencies.includes(chosenCurrency) ? chosenCurrency : currencies[0] ?? ''
+  const selected = active.find(a => a.currency === currency)
 
-  async function close(account: Account) {
-    if (window.confirm(`Close account #${account.id} (${account.currency})? This cannot be undone.`)) {
-      await run(() => accountsApi.close(token, account.id))
-    }
-  }
-
-  async function run(action: () => Promise<unknown>) {
+  async function run(action: () => Promise<unknown>, success: string): Promise<boolean> {
     setBusy(true)
     setActionError(null)
     try {
       await action()
       accounts.reload()
+      toast('success', success)
+      return true
     } catch (err) {
       setActionError(err)
+      return false
     } finally {
       setBusy(false)
     }
   }
 
-  const list = accounts.data ?? []
-  const active = list.filter(a => a.status === 'ACTIVE')
+  async function create(newCurrency: string) {
+    if (await run(() => accountsApi.create(token, newCurrency), `${newCurrency} account opened`)) {
+      setSheet(null)
+      setCurrency(newCurrency)
+    }
+  }
+
+  async function close(account: Account) {
+    if (window.confirm(`Close account #${account.id} (${account.currency})? This cannot be undone.`)) {
+      await run(() => accountsApi.close(token, account.id), `Account #${account.id} closed`)
+    }
+  }
+
+  const transfer = (account?: Account) =>
+    navigate('/transfer', { state: { background: location, fromAccountId: account?.id } })
+  const reveal = { variants: cascade.item }
+  const showCarousel = list.length > 0 && !accounts.error
+  const refresh = (
+    <button type="button" className="icon-button" aria-label="Refresh" onClick={accounts.reload} disabled={accounts.loading}>
+      <RefreshCw />
+    </button>
+  )
+
   return (
-    <>
-      <div className="page-head page-hero">
-        <div>
-          <h1>Accounts</h1>
-          <p>One active account per currency. Share the account number to receive money.</p>
-        </div>
-        <div className="actions">
-          {active.length > 0 && <Link to="/transfer" className="button-link">New transfer</Link>}
-          <Stairs />
-        </div>
-      </div>
+    <m.div className="dashboard" variants={cascade.container} initial={noMotion ? false : 'hidden'} animate="show">
+      <div className="dash-main">
+        <m.div {...reveal}>
+          {accounts.loading && !accounts.data
+            ? <div className="hero"><Skeleton className="title" /><Skeleton className="big" /></div>
+            : <BalanceHero currencies={currencies} currency={currency} account={selected} onCurrency={setCurrency} loaded={!accounts.error} />}
+        </m.div>
 
-      {actionError !== null && <Alert kind="error">{errorMessage(actionError)}</Alert>}
-
-      <section className="card" aria-labelledby="accounts-title">
-        <div className="card-head">
-          <h2 id="accounts-title">Your accounts</h2>
-          <button type="button" className="link" onClick={accounts.reload} disabled={accounts.loading}>Refresh</button>
-        </div>
-        {accounts.loading && !accounts.data ? <p className="spinner">Loading accounts…</p>
-          : accounts.error ? <Alert kind="error">{errorMessage(accounts.error)}</Alert>
-          : list.length === 0 ? <div className="empty">No accounts yet. Open your first one below.</div>
-          : (
-            <div className="accounts">
-              {list.map(account => (
-                <article key={account.id} className={`account ${account.status === 'CLOSED' ? 'closed' : ''}`}>
-                  <div className="meta">
-                    <span>Account #{account.id}</span>
-                    <span className="badge">{account.status === 'ACTIVE' ? account.currency : 'Closed'}</span>
-                  </div>
-                  <div className="balance">{formatMoney(account.balance, account.currency)}</div>
-                  <div className="meta">
-                    <span>Opened {formatDateTime(account.createdAt)}</span>
-                    {account.status === 'ACTIVE' && account.balance === 0 && (
-                      <button type="button" className="link" disabled={busy} onClick={() => close(account)}>Close</button>
-                    )}
-                  </div>
-                </article>
-              ))}
+        <m.section {...reveal} aria-labelledby="accounts-title">
+          {!showCarousel && <SectionHead id="accounts-title" title="Accounts">{refresh}</SectionHead>}
+          {actionError !== null && sheet === null && <Alert kind="error">{errorMessage(actionError)}</Alert>}
+          {accounts.loading && !accounts.data ? (
+            <div className="carousel skeleton-row">{[0, 1, 2].map(i => <Skeleton key={i} className="card" />)}</div>
+          ) : accounts.error ? (
+            <ErrorState error={accounts.error} onRetry={accounts.reload} />
+          ) : list.length === 0 ? (
+            <div className="empty-state">
+              <EmptyIllustration />
+              <p className="empty-title">No accounts yet</p>
+              <p className="secondary">Open your first account to receive and send money.</p>
+              <OpenAccountForm busy={busy} error={null} onCreate={create} />
             </div>
+          ) : (
+            <CardCarousel accounts={list} busy={busy} tools={refresh} onNew={() => { setActionError(null); setSheet({ kind: 'new' }) }}
+                          onTopUp={account => setSheet({ kind: 'topup', account })} onTransfer={transfer} onClose={close} />
           )}
-      </section>
+        </m.section>
 
-      <div className="grid-2">
-        <section className="card" aria-labelledby="open-title">
-          <h2 id="open-title">Open an account</h2>
-          <form onSubmit={create}>
-            <div className="row">
-              <Field label="Currency">
-                <select value={currency} onChange={e => setCurrency(e.target.value)}>
-                  {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </Field>
-              <button type="submit" disabled={busy}>Open account</button>
-            </div>
-          </form>
-          <p className="muted">New accounts start at zero. Money arrives by a transfer or an admin deposit.</p>
-        </section>
+        {selected && (
+          <m.div {...reveal}>
+            <QuickActions onTopUp={() => setSheet({ kind: 'topup', account: selected })} />
+          </m.div>
+        )}
 
-        <section className="card" aria-labelledby="notifications-title">
-          <div className="card-head">
-            <h2 id="notifications-title">Latest notifications</h2>
-            <button type="button" className="link" onClick={notifications.reload}>Refresh</button>
-          </div>
-          {notifications.error ? <Alert kind="error">{errorMessage(notifications.error)}</Alert>
-            : !notifications.data?.length ? <div className="empty">No notifications yet.</div>
-            : (
-              <ul className="notifications">
-                {notifications.data.map(n => (
-                  <li key={n.id}>
-                    <span>{n.message}</span>
-                    <span className="muted"> · {formatDateTime(n.createdAt)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          <p className="muted">Delivered asynchronously through Kafka, usually within a second after a transfer.</p>
-        </section>
+        {list.length > 0 && <m.div {...reveal}><RecentOperations /></m.div>}
       </div>
-    </>
+
+      {currency && (
+        <m.aside {...reveal} className="dash-aside" aria-label={`Spending in ${currency}`}>
+          <SpendingPanel currency={currency} />
+        </m.aside>
+      )}
+
+      {sheet?.kind === 'new' && (
+        <NewAccountSheet busy={busy} error={actionError} onCreate={create} onClose={() => { setSheet(null); setActionError(null) }} />
+      )}
+      {sheet?.kind === 'topup' && <TopUpSheet account={sheet.account} onClose={() => setSheet(null)} />}
+    </m.div>
   )
 }
