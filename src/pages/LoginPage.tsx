@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import { Alert } from '../components/Alert'
+import { Logo, Stairs } from '../components/Brand'
 import { Field } from '../components/Field'
 import { errorMessage } from '../lib/errors'
 
@@ -36,9 +37,9 @@ export function LoginPage() {
 
   const fieldErrors = error instanceof ApiError ? error.fieldErrors : {}
   return (
-    <div className="auth-page">
+    <div className="auth-page with-decor">
       <div className="card auth-card">
-        <div className="brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />Esep</div>
+        <div className="brand"><Logo />Esep</div>
         <h1>Sign in</h1>
         {logoutReason === 'expired' && <Alert kind="info">Your session has expired. Please sign in again.</Alert>}
         {state?.registered && <Alert kind="success">Account created. You can sign in now.</Alert>}
@@ -56,6 +57,10 @@ export function LoginPage() {
         <p className="secondary">No account yet? <Link to="/register">Create one</Link></p>
         <p className="muted">Demo users: alice@esep.dev, bob@esep.dev · password <code>password123</code></p>
       </div>
+      <aside className="auth-aside" aria-hidden="true">
+        <p className="tagline">Wallets and transfers<span>on a double-entry ledger, with spending analytics.</span></p>
+        <Stairs />
+      </aside>
     </div>
   )
 }

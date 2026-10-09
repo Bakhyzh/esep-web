@@ -8,7 +8,7 @@ and spending analytics.
 
 **Stack:** React 19 · TypeScript · Vite · React Router · Recharts · Vitest · Playwright · `fetch`
 
-![Analytics](docs/screenshots/05-analytics.png)
+![Analytics](docs/screenshots/05-analytics-1280.png)
 
 ## Live demo
 
@@ -26,10 +26,20 @@ and spending analytics.
 | History | Operations of all accounts, newest first: pagination, account and date filters kept in the URL |
 | Analytics | Spending by day/week/month, daily spending with a 7-day moving average, largest transfers, month over month |
 
+Desktop (1280 px):
+
 | | |
 |---|---|
-| ![Accounts](docs/screenshots/02-accounts.png) | ![Transfer](docs/screenshots/03-transfer.png) |
-| ![History](docs/screenshots/04-history.png) | ![Analytics, dark mode](docs/screenshots/06-analytics-dark.png) |
+| ![Sign in](docs/screenshots/01-login-1280.png) | ![Accounts](docs/screenshots/02-accounts-1280.png) |
+| ![Transfer](docs/screenshots/03-transfer-1280.png) | ![History](docs/screenshots/04-history-1280.png) |
+
+Phone (390 px):
+
+| Sign in | Accounts | Transfer | History | Analytics |
+|---|---|---|---|---|
+| ![Sign in](docs/screenshots/01-login-390.png) | ![Accounts](docs/screenshots/02-accounts-390.png) | ![Transfer](docs/screenshots/03-transfer-390.png) | ![History](docs/screenshots/04-history-390.png) | ![Analytics](docs/screenshots/05-analytics-390.png) |
+
+Screenshots are taken by the smoke test: `E2E_SCREENSHOTS=1 npm run e2e` (both widths).
 
 ## Run locally
 
@@ -75,7 +85,7 @@ with `actions/upload-pages-artifact` + `actions/deploy-pages`.
 | `npm run build` | type check (`tsc -b`) + production build into `dist/` |
 | `npm run lint` | oxlint |
 | `npm test` | unit tests (Vitest): API client, error mapping, JWT expiry, amount validation |
-| `npm run e2e` | Playwright smoke test against a running stack (`E2E_API_URL`, default `http://localhost:8081`) |
+| `npm run e2e` | Playwright smoke test against a running stack (`E2E_API_URL`, default `http://localhost:8081`); `E2E_SCREENSHOTS=1` also refreshes `docs/screenshots` |
 | `npm run check` | lint + test + build |
 
 ## Configuration
@@ -90,9 +100,10 @@ with `actions/upload-pages-artifact` + `actions/deploy-pages`.
 src/
   api/          client.ts (fetch wrapper, ApiError), esep.ts (endpoints), types.ts (DTOs)
   auth/         AuthProvider (token, expiry timer, 401 handling), useAuth, RequireAuth
-  components/   Layout, Field, Alert, Pagination, chart tooltip, theme colors
+  components/   Layout, Field, Alert, Pagination, chart tooltip, theme colors, logo and decor, icons
   lib/          formatting, error messages by code, JWT expiry, useApi (abortable loading)
   pages/        Login, Register, Accounts, Transfer, History, Analytics
+  styles/       tokens.css: brand colors, radii, fonts (the only place colors are defined)
 e2e/            Playwright smoke test
 ```
 
@@ -117,8 +128,13 @@ e2e/            Playwright smoke test
 - **Filters in the URL** (History): reload, back button and shared links keep them.
 - **Abortable loading** (`useApi`): a newer request cancels the previous one, so a slow response cannot
   overwrite fresher data.
-- **Charts** follow one-axis, thin-mark rules with a validated two-color palette (light and dark), a legend
+- **Charts** follow one-axis, thin-mark rules with the brand series colors (`--brand-2`, `--brand-3`), a legend
   for two series, tooltips and a table view; they skip animation when the OS asks for reduced motion.
   Recharts is lazy-loaded with the Analytics page (~110 kB gzip), so other pages load without it.
+- **One dark brand theme** defined as CSS variables in `src/styles/tokens.css` (no UI library, no Tailwind).
+  Poppins is bundled locally with `@fontsource/poppins` (latin subset), no Google Fonts request. The red-orange
+  brand gradient is used only for primary buttons, the logo, the active menu item and decor; errors are always an
+  icon plus text, and debit/credit amounts differ by sign (`−` / `+`), not only by color. Text pairs pass WCAG AA
+  (lowest: `--danger` on cards, 4.9:1).
 - **No state library.** Server data is loaded per page; there is little shared client state (only the session),
   so React context is enough.
