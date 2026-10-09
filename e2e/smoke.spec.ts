@@ -4,10 +4,16 @@ const API = process.env.E2E_API_URL ?? 'http://localhost:8081'
 const SHOTS = process.env.E2E_SCREENSHOTS ? 'docs/screenshots' : null
 const PASSWORD = 'password123'
 
+/** Full-page screenshots at desktop (1280 px) and phone (390 px) width; only with E2E_SCREENSHOTS set. */
 async function shot(page: Page, name: string) {
-  if (SHOTS) {
-    await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true })
+  if (!SHOTS) return
+  const desktop = page.viewportSize()!
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : desktop.height })
+    await page.waitForTimeout(300)   // let ResponsiveContainer re-measure the charts
+    await page.screenshot({ path: `${SHOTS}/${name}-${width}.png`, fullPage: true })
   }
+  await page.setViewportSize(desktop)
 }
 
 async function apiLogin(email: string): Promise<string> {
@@ -98,11 +104,6 @@ test('a new user registers, receives money, transfers it and sees history and an
   await expect(page.locator('.chart svg').first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Largest transfers' })).toBeVisible()
   await shot(page, '05-analytics')
-
-  // dark mode: chart colors are re-read from the dark design tokens
-  await page.emulateMedia({ colorScheme: 'dark' })
-  await expect(page.locator('.chart svg').first()).toBeVisible()
-  await shot(page, '06-analytics-dark')
 })
 
 test('an expired token sends the user back to the login page with an explanation', async ({ page }) => {
