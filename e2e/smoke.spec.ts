@@ -45,7 +45,7 @@ test('a new user registers, receives money, transfers it and sees history and an
   const recipient = await bobsKztAccount()
 
   // register -> login
-  await page.goto('/register')
+  await page.goto('/#/register')
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByLabel('Repeat password').fill(PASSWORD)
@@ -108,23 +108,22 @@ test('a new user registers, receives money, transfers it and sees history and an
 test('an expired token sends the user back to the login page with an explanation', async ({ page }) => {
   const base64url = (value: string) => Buffer.from(value).toString('base64url')
   const expired = `${base64url('{"alg":"HS256"}')}.${base64url(JSON.stringify({ sub: '1', exp: 1 }))}.x`
-  await page.goto('/login')
-  await page.evaluate(token => localStorage.setItem('esep.accessToken', token), expired)
+  // set before the app loads: with HashRouter a goto to another #/route does not reload the page
+  await page.addInitScript(token => localStorage.setItem('esep.accessToken', token), expired)
 
-  await page.goto('/history')
+  await page.goto('/#/history')
 
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/#\/login$/)
   await expect(page.getByText('Your session has expired. Please sign in again.')).toBeVisible()
 })
 
 test('a token rejected by the server (401) also ends the session', async ({ page }) => {
   const base64url = (value: string) => Buffer.from(value).toString('base64url')
   const forged = `${base64url('{"alg":"HS256"}')}.${base64url(JSON.stringify({ sub: '1', role: 'USER', exp: 4_000_000_000 }))}.forged`
-  await page.goto('/login')
-  await page.evaluate(token => localStorage.setItem('esep.accessToken', token), forged)
+  await page.addInitScript(token => localStorage.setItem('esep.accessToken', token), forged)
 
-  await page.goto('/accounts')
+  await page.goto('/#/accounts')
 
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/#\/login$/)
   await expect(page.getByText('Your session has expired. Please sign in again.')).toBeVisible()
 })

@@ -1,16 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router'
+import { HashRouter } from 'react-router'
 import App from './App.tsx'
 import { AuthProvider } from './auth/AuthProvider.tsx'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    {/* HashRouter (#/accounts): GitHub Pages has no SPA fallback, so a refresh on /esep-web/accounts would be a 404 */}
+    <HashRouter>
       <AuthProvider>
         <App />
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 )

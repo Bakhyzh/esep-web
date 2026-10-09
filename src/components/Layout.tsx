@@ -13,7 +13,7 @@ export function Layout() {
   return (
     <>
       <header className="app-header">
-        <NavLink to="/accounts" className="brand"><img src="/favicon.svg" alt="" />Esep</NavLink>
+        <NavLink to="/accounts" className="brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />Esep</NavLink>
         <nav className="nav" aria-label="Main">
           {LINKS.map(link => <NavLink key={link.to} to={link.to}>{link.label}</NavLink>)}
         </nav>
