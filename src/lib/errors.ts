@@ -20,6 +20,7 @@ const MESSAGES: Record<string, string> = {
   CONCURRENT_MODIFICATION: 'The account was busy. Please try again.',
   RESOURCE_NOT_FOUND: 'Not found. Check the account number.',
   VALIDATION_FAILED: 'Please fix the highlighted fields.',
+  RATE_LIMITED: 'Too many attempts. Please wait a minute and try again.',
   INTERNAL_ERROR: 'Something went wrong on the server. Please try again.',
 }
 
