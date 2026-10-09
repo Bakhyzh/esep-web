@@ -38,7 +38,7 @@ export function LoginPage() {
   return (
     <div className="auth-page">
       <div className="card auth-card">
-        <div className="brand"><img src="/favicon.svg" alt="" />Esep</div>
+        <div className="brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />Esep</div>
         <h1>Sign in</h1>
         {logoutReason === 'expired' && <Alert kind="info">Your session has expired. Please sign in again.</Alert>}
         {state?.registered && <Alert kind="success">Account created. You can sign in now.</Alert>}

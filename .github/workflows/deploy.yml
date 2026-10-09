@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# the minimum the official Pages actions need: read the code, publish Pages, prove identity via OIDC
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one Pages deploy at a time; a newer push waits instead of cancelling a deploy in progress
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      - name: Build
+        env:
+          # repository variable (Settings -> Secrets and variables -> Actions -> Variables), e.g. https://api.example.com
+          # not a secret: it ends up in the public JavaScript bundle anyway
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::Repository variable VITE_API_URL is not set (see esep-api docs/DEPLOY.md)"
+            exit 1
+          fi
+          npm run build
+
+      # fails with a clear message if Pages is not enabled with source "GitHub Actions"
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

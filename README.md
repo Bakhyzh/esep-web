@@ -1,6 +1,7 @@
 # Esep Web
 
 [![CI](https://github.com/Bakhyzh/esep-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Bakhyzh/esep-web/actions/workflows/ci.yml)
+[![Deploy](https://github.com/Bakhyzh/esep-web/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bakhyzh/esep-web/actions/workflows/deploy.yml)
 
 Frontend for **[esep-api](https://github.com/Bakhyzh/esep-api)**: wallets, transfers on a double-entry ledger
 and spending analytics.
@@ -8,6 +9,12 @@ and spending analytics.
 **Stack:** React 19 · TypeScript · Vite · React Router · Recharts · Vitest · Playwright · `fetch`
 
 ![Analytics](docs/screenshots/05-analytics.png)
+
+## Live demo
+
+- App: _TODO: https://bakhyzh.github.io/esep-web/_
+- API: _TODO: https://api.example.com/actuator/health_
+- Demo login: _TODO: shared on request_
 
 ## Screens
 
@@ -45,6 +52,21 @@ and spending analytics.
 
 > The dev server must run on port 5173: that is the origin the API allows (`CORS_ALLOWED_ORIGINS` in esep-api).
 
+## Deployment (GitHub Pages)
+
+`.github/workflows/deploy.yml` runs on every push to `main`: lint, unit tests, build, then publishes `dist/`
+with `actions/upload-pages-artifact` + `actions/deploy-pages`.
+
+- The app is served from `https://<user>.github.io/esep-web/`, so the production build uses `base: '/esep-web/'`
+  (the dev server stays at `/`).
+- Routing uses `HashRouter` (`/esep-web/#/accounts`): GitHub Pages has no SPA fallback, so a refresh on
+  `/esep-web/accounts` with `BrowserRouter` would return 404.
+- `VITE_API_URL` comes from the repository variable `vars.VITE_API_URL` (Settings → Secrets and variables →
+  Actions → Variables), e.g. `https://api.example.com`. It is **not a secret**: everything in a frontend
+  bundle is public. Never put secrets in `VITE_*` variables.
+- One-time setup: Settings → Pages → Source: **GitHub Actions**. The API must allow the origin
+  `https://<user>.github.io` (`CORS_ALLOWED_ORIGINS` in esep-api). Full checklist: esep-api `docs/DEPLOY.md`.
+
 ## Scripts
 
 | Command | What it does |
@@ -60,7 +82,7 @@ and spending analytics.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:8081` | base URL of esep-api, read at build time |
+| `VITE_API_URL` | `http://localhost:8081` | base URL of esep-api, read at build time (in CI: `vars.VITE_API_URL`) |
 
 ## Project structure
 

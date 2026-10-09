@@ -37,7 +37,7 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="card auth-card">
-        <div className="brand"><img src="/favicon.svg" alt="" />Esep</div>
+        <div className="brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />Esep</div>
         <h1>Create an account</h1>
         {error !== null && <Alert kind="error">{errorMessage(error)}</Alert>}
         <form onSubmit={submit} noValidate>
