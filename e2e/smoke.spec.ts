@@ -5,13 +5,13 @@ const SHOTS = process.env.E2E_SCREENSHOTS ? 'docs/screenshots' : null
 const PASSWORD = 'password123'
 
 /** Full-page screenshots at desktop (1280 px) and phone (390 px) width; only with E2E_SCREENSHOTS set. */
-async function shot(page: Page, name: string) {
+async function shot(page: Page, name: string, fullPage = true) {
   if (!SHOTS) return
   const desktop = page.viewportSize()!
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : desktop.height })
     await page.waitForTimeout(300)   // let ResponsiveContainer re-measure the charts
-    await page.screenshot({ path: `${SHOTS}/${name}-${width}.png`, fullPage: true })
+    await page.screenshot({ path: `${SHOTS}/${name}-${width}.png`, fullPage })
   }
   await page.setViewportSize(desktop)
 }
@@ -46,6 +46,16 @@ async function adminDeposit(accountId: number, amount: string) {
   expect(response.status).toBe(201)
 }
 
+/** Steps of the transfer sheet up to the confirmation screen; `shotName` captures the amount step. */
+async function transferSteps(page: Page, recipient: number, amount: string, shotName?: string) {
+  await page.getByRole('button', { name: 'Continue' }).click()   // source account (preselected)
+  await page.getByLabel('To account number').fill(String(recipient))
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByLabel(/Amount/).fill(amount)
+  if (shotName) await shot(page, shotName, false)   // a modal: the viewport, not the page behind it
+  await page.getByRole('button', { name: 'Continue' }).click()
+}
+
 test('a new user registers, receives money, transfers it and sees history and analytics', async ({ page }) => {
   const email = `e2e-${Date.now()}@esep.dev`
   const recipient = await bobsKztAccount()
@@ -75,35 +85,36 @@ test('a new user registers, receives money, transfers it and sees history and an
   await expect(card.locator('.balance')).toContainText('500')
   await shot(page, '02-accounts')
 
-  // transfer
-  await page.getByRole('link', { name: 'Transfer', exact: true }).click()
-  await page.getByLabel('To account number').fill(String(recipient))
-  await page.getByLabel(/Amount/).fill('120.5')
+  // transfer: a sheet in steps (source -> recipient -> amount -> confirm)
+  const nav = page.getByRole('navigation', { name: 'Main' })
+  await nav.getByRole('link', { name: 'Transfer' }).click()
+  await transferSteps(page, recipient, '120.5', '03-transfer')
   await page.getByRole('button', { name: 'Send' }).click()
   await expect(page.getByText('Transfer completed')).toBeVisible()
-  await shot(page, '03-transfer')
+  await shot(page, '04-transfer-success', false)
 
   // business error is shown in plain words
-  await page.getByLabel('To account number').fill(String(recipient))
-  await page.getByLabel(/Amount/).fill('99999')
+  await page.getByRole('button', { name: 'New transfer' }).click()
+  await transferSteps(page, recipient, '99999')
   await page.getByRole('button', { name: 'Send' }).click()
   await expect(page.getByText('Not enough money on the account.')).toBeVisible()
+  await page.getByRole('button', { name: 'Close transfer' }).click()
 
   // history: newest first, filters
-  await page.getByRole('link', { name: 'History' }).click()
+  await nav.getByRole('link', { name: 'History' }).click()
   const rows = page.locator('tbody tr')
   await expect(rows).toHaveCount(2)
   await expect(rows.first()).toContainText('outgoing')
   await expect(rows.first()).toContainText('120.5')
   await expect(rows.nth(1)).toContainText('Top-up')
-  await shot(page, '04-history')
+  await shot(page, '05-history')
 
   // analytics: the transfer is counted, charts are rendered
-  await page.getByRole('link', { name: 'Analytics' }).click()
+  await nav.getByRole('link', { name: 'Analytics' }).click()
   await expect(page.locator('.stat').first()).toContainText('120.5')
   await expect(page.locator('.chart svg').first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Largest transfers' })).toBeVisible()
-  await shot(page, '05-analytics')
+  await shot(page, '06-analytics')
 })
 
 test('an expired token sends the user back to the login page with an explanation', async ({ page }) => {

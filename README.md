@@ -6,9 +6,9 @@
 Frontend for **[esep-api](https://github.com/Bakhyzh/esep-api)**: wallets, transfers on a double-entry ledger
 and spending analytics.
 
-**Stack:** React 19 · TypeScript · Vite · React Router · Recharts · Vitest · Playwright · `fetch`
+**Stack:** React 19 · TypeScript · Vite · React Router · Recharts · Motion · Lucide · Vitest · Playwright · `fetch`
 
-![Analytics](docs/screenshots/05-analytics-1280.png)
+![Accounts](docs/screenshots/02-accounts-1280.png)
 
 ## Live demo
 
@@ -21,8 +21,8 @@ and spending analytics.
 | Screen | What it does |
 |---|---|
 | Sign in / Register | JWT login; the token is sent as `Authorization: Bearer ...` |
-| Accounts | List of accounts with balances, open an account, close an empty one, latest notifications (delivered through Kafka) |
-| Transfer | Send money; the client generates the `Idempotency-Key`, so "Try again" after a network error never pays twice |
+| Accounts (home) | Greeting and balance per currency (never summed across currencies), accounts as flippable bank cards (details, top up, transfer, close), quick actions, recent operations by day, 30-day spending sparkline and top 3 transfers. Notifications (Kafka) are in the header bell |
+| Transfer | A sheet over the current page (bottom sheet on phones, modal on desktop): source, recipient, amount, confirm, success. The client generates the `Idempotency-Key`, so "Try again" after a network error never pays twice |
 | History | Operations of all accounts, newest first: pagination, account and date filters kept in the URL |
 | Analytics | Spending by day/week/month, daily spending with a 7-day moving average, largest transfers, month over month |
 
@@ -30,14 +30,15 @@ Desktop (1280 px):
 
 | | |
 |---|---|
-| ![Sign in](docs/screenshots/01-login-1280.png) | ![Accounts](docs/screenshots/02-accounts-1280.png) |
-| ![Transfer](docs/screenshots/03-transfer-1280.png) | ![History](docs/screenshots/04-history-1280.png) |
+| ![Accounts](docs/screenshots/02-accounts-1280.png) | ![Transfer: amount step](docs/screenshots/03-transfer-1280.png) |
+| ![Transfer completed](docs/screenshots/04-transfer-success-1280.png) | ![History](docs/screenshots/05-history-1280.png) |
+| ![Analytics](docs/screenshots/06-analytics-1280.png) | ![Sign in](docs/screenshots/01-login-1280.png) |
 
 Phone (390 px):
 
-| Sign in | Accounts | Transfer | History | Analytics |
+| Accounts | Transfer | Success | History | Analytics |
 |---|---|---|---|---|
-| ![Sign in](docs/screenshots/01-login-390.png) | ![Accounts](docs/screenshots/02-accounts-390.png) | ![Transfer](docs/screenshots/03-transfer-390.png) | ![History](docs/screenshots/04-history-390.png) | ![Analytics](docs/screenshots/05-analytics-390.png) |
+| ![Accounts](docs/screenshots/02-accounts-390.png) | ![Transfer](docs/screenshots/03-transfer-390.png) | ![Success](docs/screenshots/04-transfer-success-390.png) | ![History](docs/screenshots/05-history-390.png) | ![Analytics](docs/screenshots/06-analytics-390.png) |
 
 Screenshots are taken by the smoke test: `E2E_SCREENSHOTS=1 npm run e2e` (both widths).
 
@@ -136,5 +137,14 @@ e2e/            Playwright smoke test
   brand gradient is used only for primary buttons, the logo, the active menu item and decor; errors are always an
   icon plus text, and debit/credit amounts differ by sign (`−` / `+`), not only by color. Text pairs pass WCAG AA
   (lowest: `--danger` on cards, 4.9:1).
+- **Motion.** Cascades, card slide-in, page fade + 8 px, sheet and toast entries, card tilt/glare/flip, shimmer
+  and the success check: transform and opacity only. All of it is off with `prefers-reduced-motion` or
+  `html.no-motion` (`?motion=off` before the `#`, or `localStorage esep.motion=off`); Playwright runs with
+  `reducedMotion: 'reduce'`. `motion` is loaded with `LazyMotion` + `domAnimation`.
+- **Money on screen.** Balances are shown exactly as the API sent them; the count-up only animates the text and
+  always ends on the exact formatted value. Sums (30-day spending) use integer units of 0.0001 with `BigInt`
+  (`lib/decimal.ts`), never float addition. Balances in different currencies are never added together.
+- **Top up.** esep-api has no self-service deposit (deposits are an admin operation), so "Top up" shows the
+  account number to share and copy instead of inventing a payment flow.
 - **No state library.** Server data is loaded per page; there is little shared client state (only the session),
   so React context is enough.
