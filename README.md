@@ -4,7 +4,8 @@
 [![Deploy](https://github.com/Bakhyzh/esep-web/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bakhyzh/esep-web/actions/workflows/deploy.yml)
 
 Frontend for **[esep-api](https://github.com/Bakhyzh/esep-api)**: wallets, transfers on a double-entry ledger
-and spending analytics.
+and spending analytics, styled like a mobile bank app: accounts as flippable bank cards, a stepped transfer
+sheet, a dark brand theme and motion that switches off for reduced motion.
 
 **Stack:** React 19 · TypeScript · Vite · React Router · Recharts · Motion · Lucide · Vitest · Playwright · `fetch`
 
@@ -21,7 +22,8 @@ and spending analytics.
 | Screen | What it does |
 |---|---|
 | Sign in / Register | JWT login; the token is sent as `Authorization: Bearer ...` |
-| Accounts (home) | Greeting and balance per currency (never summed across currencies), accounts as flippable bank cards (details, top up, transfer, close), quick actions, recent operations by day, 30-day spending sparkline and top 3 transfers. Notifications (Kafka) are in the header bell |
+| Header | Logo, notifications bell (latest 5, delivered through Kafka), profile menu with sign out |
+| Accounts (home) | Greeting and balance per currency (never summed across currencies), accounts as flippable bank cards (details, top up, transfer, close), quick actions, recent operations by day, 30-day spending sparkline and top 3 transfers |
 | Transfer | A sheet over the current page (bottom sheet on phones, modal on desktop): source, recipient, amount, confirm, success. The client generates the `Idempotency-Key`, so "Try again" after a network error never pays twice |
 | History | Operations of all accounts, newest first: pagination, account and date filters kept in the URL |
 | Analytics | Spending by day/week/month, daily spending with a 7-day moving average, largest transfers, month over month |
@@ -41,6 +43,25 @@ Phone (390 px):
 | ![Accounts](docs/screenshots/02-accounts-390.png) | ![Transfer](docs/screenshots/03-transfer-390.png) | ![Success](docs/screenshots/04-transfer-success-390.png) | ![History](docs/screenshots/05-history-390.png) | ![Analytics](docs/screenshots/06-analytics-390.png) |
 
 Screenshots are taken by the smoke test: `E2E_SCREENSHOTS=1 npm run e2e` (both widths).
+
+### Navigation
+
+| | Desktop (> 760 px) | Phone (≤ 760 px) |
+|---|---|---|
+| Menu | narrow icon sidebar on the left | bottom tab bar, respects `safe-area-inset-bottom` |
+| Transfer | modal over the current page | bottom sheet over the current page |
+| Accounts | several cards in a row, arrow buttons | one card + a peek of the next, swipe (scroll-snap) |
+| Card tilt and glare | with a mouse only | off (touch) |
+
+### Keyboard and accessibility
+
+- Every control is a real `<button>`, link or input with a visible focus ring (white: the red brand color is
+  reserved so it never looks like an error).
+- A card flips with Enter/Space (`<button aria-expanded>`); the hidden side is `inert` and focus moves to the
+  visible side.
+- Sheets are native `<dialog>` elements: focus stays inside, Esc and the close button close them.
+- Errors are always an icon plus text; incoming and outgoing amounts differ by sign and icon, not only by color.
+- Text contrast passes WCAG AA (lowest pair: `--danger` on cards, 4.9:1).
 
 ## Run locally
 
@@ -62,6 +83,10 @@ Screenshots are taken by the smoke test: `E2E_SCREENSHOTS=1 npm run e2e` (both w
    deposit: `admin@esep.dev` / `password123` via Swagger (`POST /api/deposits`) or the Postman collection in esep-api.
 
 > The dev server must run on port 5173: that is the origin the API allows (`CORS_ALLOWED_ORIGINS` in esep-api).
+
+To turn animations off (demos, screenshots, debugging): open `http://localhost:5173/?motion=off#/accounts`
+or run `localStorage.setItem('esep.motion', 'off')` in the browser console. The OS setting "reduce motion"
+does the same.
 
 ## Deployment (GitHub Pages)
 
@@ -85,8 +110,8 @@ with `actions/upload-pages-artifact` + `actions/deploy-pages`.
 | `npm run dev` | dev server with hot reload |
 | `npm run build` | type check (`tsc -b`) + production build into `dist/` |
 | `npm run lint` | oxlint |
-| `npm test` | unit tests (Vitest): API client, error mapping, JWT expiry, amount validation |
-| `npm run e2e` | Playwright smoke test against a running stack (`E2E_API_URL`, default `http://localhost:8081`); `E2E_SCREENSHOTS=1` also refreshes `docs/screenshots` |
+| `npm test` | unit tests (Vitest): API client, error mapping, JWT expiry, amount validation and grouping, exact money sums |
+| `npm run e2e` | Playwright smoke test against a running stack (`E2E_API_URL`, default `http://localhost:8081`): register, open an account, deposit, transfer through the sheet, a business error, history, analytics, expired and rejected tokens. Runs with reduced motion; `E2E_SCREENSHOTS=1` also refreshes `docs/screenshots` |
 | `npm run check` | lint + test + build |
 
 ## Configuration
@@ -101,10 +126,14 @@ with `actions/upload-pages-artifact` + `actions/deploy-pages`.
 src/
   api/          client.ts (fetch wrapper, ApiError), esep.ts (endpoints), types.ts (DTOs)
   auth/         AuthProvider (token, expiry timer, 401 handling), useAuth, RequireAuth
-  components/   Layout, Field, Alert, Pagination, chart tooltip, theme colors, logo and decor, icons
-  lib/          formatting, error messages by code, JWT expiry, useApi (abortable loading)
+  components/   Layout (shell), HeaderMenus (bell, profile), BankCard (tilt, flip), Sheet (<dialog>),
+                Toaster, States (skeleton, empty, error), Field, Alert, Pagination, chart tooltip, logo
+  lib/          format (money, amount input), decimal (exact sums), motion (on/off, cascade), useCountUp,
+                cards (currency themes, masked number), errors by code, JWT expiry, useApi, dataVersion
   pages/        Login, Register, Accounts, Transfer, History, Analytics
-  styles/       tokens.css: brand colors, radii, fonts (the only place colors are defined)
+    dashboard/  BalanceHero, CardCarousel, QuickActions, RecentOperations, SpendingPanel, AccountSheets
+    transfer/   SuccessMark
+  styles/       tokens.css (the only place colors are defined), shell, card, dashboard, sheet
 e2e/            Playwright smoke test
 ```
 
@@ -131,16 +160,21 @@ e2e/            Playwright smoke test
   overwrite fresher data.
 - **Charts** follow one-axis, thin-mark rules with the brand series colors (`--brand-2`, `--brand-3`), a legend
   for two series, tooltips and a table view; they skip animation when the OS asks for reduced motion.
-  Recharts is lazy-loaded with the Analytics page (~110 kB gzip), so other pages load without it.
-- **One dark brand theme** defined as CSS variables in `src/styles/tokens.css` (no UI library, no Tailwind).
-  Poppins is bundled locally with `@fontsource/poppins` (latin subset), no Google Fonts request. The red-orange
-  brand gradient is used only for primary buttons, the logo, the active menu item and decor; errors are always an
-  icon plus text, and debit/credit amounts differ by sign (`−` / `+`), not only by color. Text pairs pass WCAG AA
-  (lowest: `--danger` on cards, 4.9:1).
+  Recharts is lazy-loaded with the Analytics page (~110 kB gzip), so other pages load without it; the home
+  sparkline is a hand-drawn SVG.
+- **One dark brand theme** defined as CSS variables in `src/styles/tokens.css` (no UI kit, no Tailwind; icons
+  from `lucide-react`). Poppins is bundled locally with `@fontsource/poppins` (latin subset), no Google Fonts
+  request. The red-orange gradient is the one accent per screen: the KZT card, primary buttons, the logo and the
+  active-menu bar; other currencies get navy, graphite or teal cards.
+- **Transfer as a sheet on its own route.** `/transfer` keeps its URL (links, reload and the back button work),
+  but is rendered over the page it was opened from (`state.background`, the React Router "modal route" pattern);
+  a direct visit shows it over Accounts. After a transfer, a shared data version makes the page behind reload
+  balances and operations.
 - **Motion.** Cascades, card slide-in, page fade + 8 px, sheet and toast entries, card tilt/glare/flip, shimmer
   and the success check: transform and opacity only. All of it is off with `prefers-reduced-motion` or
   `html.no-motion` (`?motion=off` before the `#`, or `localStorage esep.motion=off`); Playwright runs with
-  `reducedMotion: 'reduce'`. `motion` is loaded with `LazyMotion` + `domAnimation`.
+  `reducedMotion: 'reduce'`. `motion` is loaded with `LazyMotion` + `domAnimation`. The card tilt reads the
+  card size once per hover and writes CSS variables in `requestAnimationFrame`, so mouse moves cause no layout.
 - **Money on screen.** Balances are shown exactly as the API sent them; the count-up only animates the text and
   always ends on the exact formatted value. Sums (30-day spending) use integer units of 0.0001 with `BigInt`
   (`lib/decimal.ts`), never float addition. Balances in different currencies are never added together.
