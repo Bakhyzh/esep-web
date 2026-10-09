@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motionDisabled } from '../lib/motion'
 
 export interface ThemeColors {
   series1: string
@@ -21,7 +22,7 @@ function read(): ThemeColors {
     text: value('--text'),
     muted: value('--text-muted'),
     surface: value('--bg-elevated'),
-    animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    animate: !motionDisabled(),
   }
 }
 

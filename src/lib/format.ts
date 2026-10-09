@@ -1,11 +1,26 @@
-export function formatMoney(amount: number, currency: string): string {
+/** `amount` may be an exact decimal string ("120.5000", see decimal.ts): Intl formats it without a float. */
+export function formatMoney(amount: number | `${number}`, currency: string): string {
   try {
     return new Intl.NumberFormat(undefined, {
       style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 4,
     }).format(amount)
   } catch {
-    return `${amount.toFixed(2)} ${currency}`
+    return `${Number(amount).toFixed(2)} ${currency}`
   }
+}
+
+/** Groups the integer part of a typed amount: "12345.5" -> "12 345.5" (a space never clashes with "." or ","). */
+export function groupDigits(raw: string): string {
+  const [int, frac] = raw.split('.')
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009')
+  return frac === undefined ? grouped : `${grouped}.${frac}`
+}
+
+/** Typed text -> raw amount: digits and one ".", a "," also counts as the decimal point. */
+export function cleanAmount(typed: string): string {
+  const text = typed.replace(/,/g, '.').replace(/[^\d.]/g, '')
+  const dot = text.indexOf('.')
+  return dot === -1 ? text : text.slice(0, dot + 1) + text.slice(dot + 1).replace(/\./g, '')
 }
 
 export function formatNumber(value: number): string {

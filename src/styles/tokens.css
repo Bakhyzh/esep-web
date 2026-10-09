@@ -29,9 +29,16 @@
   --radius-md: 14px;
   --radius-lg: 20px;
 
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--brand-2) 45%, transparent);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--text) 22%, transparent);
   --font: 'Poppins', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --card-radius: 22px;
+  --card-w: clamp(264px, 78vw, 320px);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --header-h: 64px;
+  --nav-w: 88px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* chart series, read by useThemeColors (SVG attributes cannot use var()) */
   --series-1: var(--brand-2);

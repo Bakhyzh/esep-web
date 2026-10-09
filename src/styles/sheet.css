@@ -1,0 +1,68 @@
+/* Native <dialog>: centered modal from 640 px, bottom sheet below. Enter animations use transform/opacity. */
+dialog.sheet {
+  padding: 0; color: var(--text); background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 24px; width: min(480px, calc(100vw - 32px)); max-height: min(760px, calc(100dvh - 48px)); overflow: auto;
+  overscroll-behavior: contain;
+}
+dialog.sheet[open] { animation: modal-in .28s var(--ease-out); }
+dialog.sheet::backdrop { background: rgb(5 5 8 / 72%); backdrop-filter: blur(4px); animation: fade-in .2s ease-out; }
+.sheet-body { display: grid; gap: 18px; padding: 20px 24px 24px; }
+.sheet-grip { display: none; }
+.sheet-head { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.sheet-head h2 { flex: 1; font-size: 1.375rem; font-weight: 800; letter-spacing: -0.02em; }
+.sheet-skeleton { display: grid; gap: 10px; }
+
+.steps { display: grid; gap: 6px; }
+.steps-text { font-size: 0.75rem; color: var(--text-subtle); }
+.steps-bar { display: block; height: 4px; border-radius: 2px; background: var(--bg-hover); overflow: hidden; }
+.steps-bar span { display: block; height: 100%; background: var(--text); transform-origin: left; transition: transform .35s var(--ease-out); }
+
+form.step { gap: 18px; }
+.source-list { display: grid; gap: 10px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.amount-field .field { justify-items: stretch; }
+input.amount-input {
+  min-height: 80px; padding: 8px 12px; text-align: center; font-size: clamp(2.25rem, 10vw, 3rem); font-weight: 800;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums; border-radius: var(--radius-md);
+}
+.confirm-amount { display: grid; justify-items: center; gap: 2px; padding: 4px 0; }
+.confirm-amount strong { font-size: clamp(2rem, 9vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.summary { margin: 0; border-top: 1px solid var(--border); }
+.summary div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.summary dt { color: var(--text-muted); }
+.summary dd { margin: 0; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.step-actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; }
+.step-actions button { min-height: 52px; }
+
+/* success: the circle and the check draw themselves, then the summary rises */
+.transfer-success { display: grid; justify-items: center; text-align: center; gap: 6px; padding: 4px 0 8px; }
+.transfer-success h3 { font-size: 1.5rem; font-weight: 800; margin-top: 8px; }
+.success-amount { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.transfer-success h3, .transfer-success p { animation: rise .4s var(--ease-out) .65s both; }
+.success-mark { width: 88px; height: 88px; }
+.success-circle, .success-check { fill: none; stroke: var(--success); stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+.success-circle { stroke-width: 3; stroke-dashoffset: 1; animation: draw .55s ease-out forwards; }
+.success-check { stroke-width: 4.5; stroke-dashoffset: 1; animation: draw .35s ease-out .45s forwards; }
+@media (prefers-reduced-motion: reduce) { .success-circle, .success-check { stroke-dashoffset: 0; } }
+html.no-motion .success-circle, html.no-motion .success-check { stroke-dashoffset: 0; }
+
+.copy-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 12px 12px 18px;
+  border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg);
+}
+.copy-value { font-size: 1.75rem; font-weight: 800; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+
+@keyframes modal-in { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+@media (max-width: 639px) {
+  dialog.sheet {
+    margin: auto 0 0; width: 100%; max-width: 100%; max-height: calc(100dvh - 24px);
+    border-radius: 24px 24px 0 0; border-bottom: 0;
+  }
+  dialog.sheet[open] { animation: sheet-up .32s var(--ease-out); }
+  .sheet-body { padding: 10px 16px calc(20px + var(--safe-bottom)); }
+  .sheet-grip { display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto; }
+}
