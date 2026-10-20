@@ -139,3 +139,4 @@ test('a token rejected by the server (401) also ends the session', async ({ page
   await expect(page).toHaveURL(/#\/login$/)
   await expect(page.getByText('Your session has expired. Please sign in again.')).toBeVisible()
 })
+
