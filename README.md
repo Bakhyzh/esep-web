@@ -20,6 +20,7 @@ and spending analytics.
 
 | Screen | What it does |
 |---|---|
+| Intro (`/`) | Public landing page: animated hero with floating cards, feature grid, a double-entry ledger demo, steps and a call to action. Signed-in users get "Open app" instead of sign-up buttons |
 | Sign in / Register | JWT login; the token is sent as `Authorization: Bearer ...` |
 | Accounts (home) | Greeting and balance per currency (never summed across currencies), accounts as flippable bank cards (details, top up, transfer, close), quick actions, recent operations by day, 30-day spending sparkline and top 3 transfers. Notifications (Kafka) are in the header bell |
 | Transfer | A sheet over the current page (bottom sheet on phones, modal on desktop): source, recipient, amount, confirm, success. The client generates the `Idempotency-Key`, so "Try again" after a network error never pays twice |
