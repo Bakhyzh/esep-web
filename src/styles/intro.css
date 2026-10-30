@@ -222,13 +222,13 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 960px) {
-  .intro-nav nav { display: none; }
   .intro-hero, .intro-split { grid-template-columns: minmax(0, 1fr); }
   .hero-scene { height: 360px; }
   .intro-features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .intro-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
+  .intro-nav nav { display: none; }
   .intro-nav-actions .ghost { display: none; }
   .hero-scene { height: 300px; }
   .hero-card { width: 230px; }
@@ -244,91 +244,4 @@
   .intro-steps::before, .intro-steps-line { display: none; }
   .ledger-demo { padding: 18px; }
   .intro .ledger-table th, .intro .ledger-table td { white-space: nowrap; padding: 10px 6px; }
-}
-
-/* ---------- about the author ---------- */
-.author {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(24px, 5vw, 56px); align-items: start;
-  padding: clamp(24px, 4vw, 48px); border-radius: 28px; background: var(--bg-elevated); border: 1px solid var(--border);
-}
-.author-photo { position: relative; width: clamp(120px, 16vw, 180px); aspect-ratio: 1; }
-.author-photo::before {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(var(--brand-1), var(--brand-3), var(--brand-1));
-  animation: spin 6s linear infinite;
-}
-.author-photo img {
-  position: relative; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 4px solid var(--bg-elevated);
-  background: var(--bg-hover);
-}
-.author-body { display: grid; gap: 14px; justify-items: start; }
-.author-body h2 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -0.03em; word-spacing: 0.08em; }
-.author-role { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-weight: 600; font-size: 1.125rem; }
-.author-role .muted { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; font-size: 0.9375rem; }
-.author-stack, .project-stack { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.author-stack li, .project-stack li {
-  padding: 4px 12px; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; color: var(--text-muted);
-  background: var(--bg-hover); border: 1px solid var(--border);
-}
-.author-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
-a.social {
-  display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; min-height: 44px; border-radius: var(--radius-md);
-  color: var(--text); text-decoration: none; font-weight: 500; border: 1px solid var(--border); background: var(--bg);
-  transition: border-color .2s, translate .2s var(--ease-out), background-color .2s;
-}
-a.social:hover { color: var(--text); border-color: var(--brand-2); background: var(--bg-hover); translate: 0 -2px; }
-a.social .icon { width: 18px; height: 18px; margin: 0; }
-
-/* ---------- projects ---------- */
-.projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.project {
-  display: grid; grid-template-rows: auto auto 1fr auto auto; gap: 12px; padding: 24px; border-radius: var(--radius-lg);
-  background: var(--bg-elevated); border: 1px solid var(--border); transition: border-color .3s, translate .3s var(--ease-out);
-}
-.project:hover { border-color: color-mix(in srgb, var(--brand-3) 45%, var(--border)); translate: 0 -4px; }
-.project-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.project-tag { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand-3); }
-.project-live { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: var(--success); }
-.project-live .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
-.project h3 { font-size: 1.25rem; font-weight: 700; }
-.project p { color: var(--text-muted); font-size: 0.9375rem; }
-.project-links { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
-.project-links a { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.875rem; color: var(--text); text-decoration: none; }
-.project-links a:hover { color: var(--brand-3); }
-.project-links .icon { margin: 0; }
-
-/* ---------- hire me ---------- */
-.hire {
-  position: relative; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; align-items: center;
-  padding: clamp(28px, 5vw, 56px); border-radius: 28px; background: var(--bg-elevated); overflow: hidden;
-  border: 1px solid transparent;
-  background: linear-gradient(var(--bg-elevated), var(--bg-elevated)) padding-box, var(--brand-gradient) border-box;
-}
-.hire::after {
-  content: ''; position: absolute; width: 420px; height: 420px; right: -140px; top: -160px; border-radius: 50%; pointer-events: none;
-  background: var(--brand-2); filter: blur(120px); opacity: 0.25; animation: blob-b 14s ease-in-out infinite alternate;
-}
-.hire-copy { position: relative; display: grid; gap: 16px; justify-items: start; }
-.hire-copy h2 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -0.03em; word-spacing: 0.08em; line-height: 1.08; }
-.hire-list { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.hire-list li {
-  display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: var(--radius-md); font-weight: 500;
-  background: color-mix(in srgb, var(--bg) 70%, transparent); border: 1px solid var(--border);
-}
-.hire-list span { font-weight: 800; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-.intro-footer-links { display: inline-flex; align-items: center; gap: 14px; }
-.intro-footer-links a { color: var(--text-muted); display: inline-flex; }
-.intro-footer-links a:hover { color: var(--text); }
-.intro-footer-links .icon { width: 18px; height: 18px; margin: 0; }
-
-@media (max-width: 960px) {
-  .projects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hire { grid-template-columns: minmax(0, 1fr); }
-}
-@media (max-width: 640px) {
-  .author { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
-  .author-body { justify-items: center; }
-  .author-role, .author-stack, .author-links { justify-content: center; }
-  .projects { grid-template-columns: minmax(0, 1fr); }
-  .hire .intro-ctas, .hire .intro-ctas a { width: 100%; }
 }
