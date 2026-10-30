@@ -7,14 +7,10 @@ import { Logo } from '../components/Brand'
 import { motionDisabled, useMotionDisabled } from '../lib/motion'
 import { useCountUp } from '../lib/useCountUp'
 import '../styles/intro.css'
+import { AboutAuthor, GitHubIcon, HireMe, LinkedInIcon, Projects } from './intro/Author'
+import { CONTACTS } from './intro/contacts'
+import { EASE, reveal, stagger } from './intro/motion'
 
-const EASE = [0.22, 1, 0.36, 1] as const
-
-const reveal = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
-}
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } }
 
 const FEATURES = [
   { icon: WalletCards, title: 'Multi-currency wallets', text: 'Open accounts in KZT, USD and EUR. Balances are never mixed across currencies.' },
@@ -54,6 +50,8 @@ export function IntroPage() {
         <nav aria-label="Sections">
           <button type="button" className="link" onClick={() => scrollTo('features')}>Features</button>
           <button type="button" className="link" onClick={() => scrollTo('ledger')}>How it works</button>
+          <button type="button" className="link" onClick={() => scrollTo('about')}>About</button>
+          <button type="button" className="link" onClick={() => scrollTo('hire')}>Hire me</button>
         </nav>
         <div className="intro-nav-actions">
           {token ? (
@@ -142,12 +140,20 @@ export function IntroPage() {
             </Link>
           </m.div>
         </Section>
+
+        <AboutAuthor initial={initial} />
+        <Projects initial={initial} />
+        <HireMe initial={initial} />
       </main>
 
       <footer className="intro-footer">
         <span className="brand"><Logo />Esep</span>
-        <span className="muted">React · Spring Boot · PostgreSQL · Kafka · Redis</span>
-        <a href="https://github.com/Bakhyzh/esep-web" target="_blank" rel="noreferrer">GitHub</a>
+        <span className="muted">Made by Bakhyt Zharkynbek · React · Spring Boot · PostgreSQL · Kafka</span>
+        <span className="intro-footer-links">
+          <a href={CONTACTS.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"><LinkedInIcon /></a>
+          <a href={CONTACTS.github} target="_blank" rel="noreferrer" aria-label="GitHub"><GitHubIcon /></a>
+          <a href={CONTACTS.telegram} target="_blank" rel="noreferrer">@bakhyzh</a>
+        </span>
       </footer>
     </div>
   )
