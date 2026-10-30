@@ -1,12 +1,13 @@
 import { domAnimation, LazyMotion } from 'motion/react'
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
-import { Navigate, Route, Routes, useLocation, type Location } from 'react-router'
+import { Route, Routes, useLocation, type Location } from 'react-router'
 import { RequireAuth } from './auth/RequireAuth'
 import { Layout } from './components/Layout'
 import { Toaster } from './components/Toaster'
 import { DataVersionContext } from './lib/dataVersion'
 import { AccountsPage } from './pages/AccountsPage'
 import { HistoryPage } from './pages/HistoryPage'
+import { IntroPage } from './pages/IntroPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -32,10 +33,10 @@ export default function App() {
       <DataVersionContext value={dataVersion}>
         <Toaster>
           <Routes location={background ?? location}>
+            <Route index element={<IntroPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route element={<RequireAuth><Layout /></RequireAuth>}>
-              <Route index element={<Navigate to="/accounts" replace />} />
               <Route path="/accounts" element={<AccountsPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/analytics" element={<Suspense fallback={<p className="spinner">Loading charts…</p>}><AnalyticsPage /></Suspense>} />
