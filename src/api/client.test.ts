@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, onUnauthorized, request, toApiError } from './client'
+import { ApiError, onUnauthorized, request, setAccessTokenProvider, toApiError } from './client'
 
 afterEach(() => {
   vi.unstubAllGlobals()
   onUnauthorized(null)
+  setAccessTokenProvider(null)
 })
 
 function respond(status: number, body: unknown, headers: Record<string, string> = {}) {
@@ -70,5 +71,24 @@ describe('request', () => {
   it('does not mark a business error as retryable', () => {
     expect(toApiError(422, { code: 'INSUFFICIENT_FUNDS' }).isRetryable).toBe(false)
     expect(toApiError(409, { code: 'CONCURRENT_MODIFICATION' }).isRetryable).toBe(true)
+  })
+})
+
+
+describe('OIDC access token provider', () => {
+  it('uses the refreshed token and preserves the financial idempotency key', async () => {
+    respond(201, { id: 123 })
+    setAccessTokenProvider(async () => 'fresh-access-token')
+    await request('/api/transfers', { token: 'expired-token', method: 'POST', body: {}, headers: { 'Idempotency-Key': 'stable-key' } })
+    const headers = vi.mocked(fetch).mock.calls[0][1]?.headers as Record<string, string>
+    expect(headers.Authorization).toBe('Bearer fresh-access-token')
+    expect(headers['Idempotency-Key']).toBe('stable-key')
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+  it('never sends or retries a financial write if session refresh fails', async () => {
+    respond(201, {})
+    setAccessTokenProvider(async () => { throw new Error('Session expired') })
+    await expect(request('/api/transfers', { token: 'expired-token', method: 'POST', body: {} })).rejects.toThrow('Session expired')
+    expect(fetch).not.toHaveBeenCalled()
   })
 })

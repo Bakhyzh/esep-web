@@ -30,6 +30,11 @@ export function toApiError(status: number, body: ProblemDetail | null): ApiError
   return new ApiError(status, body?.code ?? 'UNKNOWN', body?.detail ?? body?.title ?? `HTTP ${status}`, fieldErrors)
 }
 
+let accessTokenProvider: (() => Promise<string>) | null = null
+export function setAccessTokenProvider(provider: (() => Promise<string>) | null) {
+  accessTokenProvider = provider
+}
+
 let unauthorizedHandler: (() => void) | null = null
 
 /** The auth layer registers a callback: any 401 on an authenticated request means the session is over. */
@@ -60,7 +65,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     headers['Content-Type'] = 'application/json'
   }
   if (options.token) {
-    headers.Authorization = `Bearer ${options.token}`
+    headers.Authorization = `Bearer ${accessTokenProvider ? await accessTokenProvider() : options.token}`
   }
 
   let response: Response

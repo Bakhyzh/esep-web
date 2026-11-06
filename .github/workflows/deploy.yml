@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy_pages:
+        description: Explicitly authorize public Pages deployment
+        type: boolean
+        default: false
 
 # the minimum the official Pages actions need: read the code, publish Pages, prove identity via OIDC
 permissions:
@@ -51,6 +56,7 @@ jobs:
           path: dist
 
   deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_pages
     needs: build
     runs-on: ubuntu-latest
     environment:

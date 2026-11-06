@@ -1,6 +1,8 @@
 import { domAnimation, LazyMotion } from 'motion/react'
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import { Route, Routes, useLocation, type Location } from 'react-router'
+import { oidcEnabled } from './auth/oidc'
+import { OidcLoginPage } from './auth/OidcLoginPage'
 import { RequireAuth } from './auth/RequireAuth'
 import { Layout } from './components/Layout'
 import { Toaster } from './components/Toaster'
@@ -34,8 +36,8 @@ export default function App() {
         <Toaster>
           <Routes location={background ?? location}>
             <Route index element={<IntroPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={oidcEnabled ? <OidcLoginPage /> : <LoginPage />} />
+            <Route path="/register" element={oidcEnabled ? <OidcLoginPage /> : <RegisterPage />} />
             <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route path="/accounts" element={<AccountsPage />} />
               <Route path="/history" element={<HistoryPage />} />

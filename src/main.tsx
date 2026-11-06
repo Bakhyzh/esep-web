@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router'
 import App from './App.tsx'
+import { initializeOidc, oidcEnabled } from './auth/oidc'
+import { OidcAuthProvider } from './auth/OidcAuthProvider'
 import { AuthProvider } from './auth/AuthProvider.tsx'
 // latin subset only: the UI is in English, other glyphs (e.g. ₸) fall back to system-ui
 import '@fontsource/poppins/latin-400.css'
@@ -19,13 +21,22 @@ try {
   // storage may be unavailable
 }
 
+let oidcReady = true
+if (oidcEnabled) {
+  try { await initializeOidc() } catch { oidcReady = false }
+}
+const SelectedAuthProvider = oidcEnabled ? OidcAuthProvider : AuthProvider
+
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  oidcReady ? <StrictMode>
     {/* HashRouter (#/accounts): GitHub Pages has no SPA fallback, so a refresh on /esep-web/accounts would be a 404 */}
     <HashRouter>
-      <AuthProvider>
+      <SelectedAuthProvider>
         <App />
-      </AuthProvider>
+      </SelectedAuthProvider>
     </HashRouter>
-  </StrictMode>,
+  </StrictMode> : <main role="alert">
+    <p>Cannot connect to sign in. Please try again.</p>
+    <button onClick={() => location.reload()}>Retry</button>
+  </main>,
 )
