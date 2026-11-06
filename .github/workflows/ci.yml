@@ -1,9 +1,9 @@
 name: CI
 
-# main is built and checked by deploy.yml as well; this workflow guards pull requests
+# Verify feature branches before integration; public Pages deployment remains separately gated.
 on:
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
 
 permissions:
