@@ -53,3 +53,8 @@ approved identity/data reconciliation, TLS/security and operational review.
 
 Backend phase-D report records remote publication/CI. Later edge replicas,
 observability, recovery, load testing and production readiness remain separate work.
+
+Publication: frontend main `4344375970d63dfeaa108352ce581eec5857831a`,
+feature CI `42227415319` success; backend main
+`25a28ab78f24d481ec993b0161a7214a2858c619`, CI `42227334980` all six jobs success.
+Both remote main SHAs verified; no public deployment.
