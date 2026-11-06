@@ -23,6 +23,7 @@ export function AnalyticsPage() {
     () => [...new Set((accounts.data ?? []).map(a => a.currency))].sort(),
     [accounts.data])
 
+  const [refreshVersion, setRefreshVersion] = useState(0)
   const [chosenCurrency, setCurrency] = useState('')
   const currency = chosenCurrency || currencies[0] || ''
   const [from, setFrom] = useState(daysAgo(29))
@@ -45,8 +46,9 @@ export function AnalyticsPage() {
       <div className="page-head">
         <div>
           <h1>Analytics</h1>
-          <p>Where your money went: outgoing transfers in one currency.</p>
+          <p>Where your money went: outgoing transfers in one currency. Recent transfers may take a moment to appear.</p>
         </div>
+        <button type="button" className="secondary" onClick={() => setRefreshVersion(n => n + 1)}>Refresh reports</button>
       </div>
 
       <section className="card">
@@ -74,7 +76,7 @@ export function AnalyticsPage() {
       </section>
 
       {rangeInvalid ? <Alert kind="error">Choose a start date before the end date.</Alert> : (
-        <Reports token={token} currency={currency} from={from} to={to} period={period} onPeriod={setPeriod} />
+        <Reports key={refreshVersion} token={token} currency={currency} from={from} to={to} period={period} onPeriod={setPeriod} />
       )}
     </>
   )

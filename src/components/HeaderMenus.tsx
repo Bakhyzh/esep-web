@@ -31,7 +31,7 @@ export function NotificationsMenu() {
                 ))}
               </ul>
             )}
-          <p className="popover-note">Delivered through Kafka, usually within a second after a transfer.</p>
+          <p className="popover-note">Notifications can take a moment to appear after a transfer.</p>
         </div>
       )}
     </div>

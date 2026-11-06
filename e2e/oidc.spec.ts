@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test'
 
 // OIDC tests must not save network traces, screenshots or token-bearing storage.
 test.use({ trace: 'off', screenshot: 'off', video: 'off' })
+// Prevent framework failure snapshots from retaining an authentication form.
+test.afterEach(async ({ page }) => { await page.close() })
 test('real Keycloak PKCE login preserves the local owner and logs out', async ({ page }) => {
   test.skip(!process.env.ESEP_OIDC_USERNAME, 'Run through the backend cutover smoke orchestrator')
   await page.goto('/#/login')
@@ -23,7 +25,7 @@ test('real Keycloak PKCE login preserves the local owner and logs out', async ({
   const stored = await page.evaluate(() => ({
     local: Object.entries(localStorage), session: Object.entries(sessionStorage),
   }))
-  expect(JSON.stringify(stored)).not.toMatch(/eyJ[A-Za-z0-9_-]+\./)
+  expect(/eyJ[A-Za-z0-9_-]+\./.test(JSON.stringify(stored))).toBe(false)
   expect(stored.local.some(([k]) => k === 'esep.accessToken')).toBe(false)
   // The signed-in dashboard reads the existing account through the real Bearer API.
   await expect(page.getByRole('button', { name: 'Profile menu' })).toBeVisible()

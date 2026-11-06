@@ -12,11 +12,11 @@ export const authApi = {
     request<TokenResponse>('/api/auth/login', { method: 'POST', body: { email, password } }).then(r => r.data),
   register: (email: string, password: string) =>
     request<UserResponse>('/api/auth/register', { method: 'POST', body: { email, password } }).then(r => r.data),
-  me: (token: string) => request<UserResponse>('/api/auth/me', { token }).then(r => r.data),
+  me: (token: string, signal?: AbortSignal) => request<UserResponse>('/api/auth/me', { token, signal }).then(r => r.data),
 }
 
 export const accountsApi = {
-  list: (token: string) => request<Account[]>('/api/accounts', { token }).then(r => r.data),
+  list: (token: string, signal?: AbortSignal) => request<Account[]>('/api/accounts', { token, signal }).then(r => r.data),
   create: (token: string, currency: string) =>
     request<Account>('/api/accounts', { method: 'POST', token, body: { currency } }).then(r => r.data),
   close: (token: string, id: number) =>
@@ -66,6 +66,6 @@ export const analyticsApi = {
 }
 
 export const notificationsApi = {
-  latest: (token: string, limit = 5) =>
-    request<Notification[]>('/api/notifications', { token, query: { limit } }).then(r => r.data),
+  latest: (token: string, limit = 5, signal?: AbortSignal) =>
+    request<Notification[]>('/api/notifications', { token, signal, query: { limit } }).then(r => r.data),
 }

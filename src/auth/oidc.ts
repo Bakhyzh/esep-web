@@ -4,7 +4,7 @@ export const oidcEnabled = import.meta.env.VITE_AUTH_MODE === 'keycloak'
 export const keycloak = new Keycloak({
   url: import.meta.env.VITE_OIDC_URL ?? 'http://localhost:8180',
   realm: import.meta.env.VITE_OIDC_REALM ?? 'esep',
-  clientId: 'esep-web',
+  clientId: import.meta.env.VITE_OIDC_CLIENT_ID ?? 'esep-web',
 })
 
 export async function initializeOidc() {

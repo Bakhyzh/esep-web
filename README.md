@@ -149,3 +149,12 @@ e2e/            Playwright smoke test
   account number to share and copy instead of inventing a payment flow.
 - **No state library.** Server data is loaded per page; there is little shared client state (only the session),
   so React context is enough.
+
+### Independent microservices through local Gateway
+
+For the isolated platform, use `.env.platform.example` as `.env.local`, then
+`npm ci && npm run dev -- --host localhost --port 5173 --strictPort`.
+The Gateway is localhost18080; Keycloak remains localhost8180. No credentials
+belong in frontend environment variables. See
+[verified integration and rollback](docs/architecture/PHASE_D_GATEWAY_INTEGRATION.md).
+Production hosting remains an explicit deployment action.
